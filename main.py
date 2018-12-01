@@ -2,13 +2,14 @@
 import os
 import argparse
 import datetime
+import re
 import torch
 import torchtext.data as data
 import torchtext.datasets as datasets
 import model
 import train
 import mydatasets
-
+import winedataset
 
 parser = argparse.ArgumentParser(description='CNN text classificer')
 # learning
@@ -39,6 +40,25 @@ parser.add_argument('-predict', type=str, default=None, help='predict the senten
 parser.add_argument('-test', action='store_true', default=False, help='train or test')
 args = parser.parse_args()
 
+def clean_str(string):
+    """
+    Tokenization/string cleaning for all datasets except for SST.
+    Original taken from https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
+    """
+    string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
+    string = re.sub(r"\'s", " \'s", string)
+    string = re.sub(r"\'ve", " \'ve", string)
+    string = re.sub(r"n\'t", " n\'t", string)
+    string = re.sub(r"\'re", " \'re", string)
+    string = re.sub(r"\'d", " \'d", string)
+    string = re.sub(r"\'ll", " \'ll", string)
+    string = re.sub(r",", " , ", string)
+    string = re.sub(r"!", " ! ", string)
+    string = re.sub(r"\(", " \( ", string)
+    string = re.sub(r"\)", " \) ", string)
+    string = re.sub(r"\?", " \? ", string)
+    string = re.sub(r"\s{2,}", " ", string)
+    return string.strip()
 
 # load SST dataset
 def sst(text_field, label_field,  **kargs):
@@ -65,12 +85,24 @@ def mr(text_field, label_field, **kargs):
                                 **kargs)
     return train_iter, dev_iter
 
+def wine(text_field, label_field, **kargs):
+    train_data, dev_data = winedataset.CSV.splits(text_field, label_field)
+    text_field.build_vocab(train_data, dev_data)
+    label_field.build_vocab(train_data, dev_data)
+    train_iter, dev_iter = data.Iterator.splits(
+                                (train_data, dev_data), 
+                                batch_sizes=(args.batch_size, len(dev_data)),
+                                **kargs)
+    return train_iter, dev_iter
+
+
 
 # load data
 print("\nLoading data...")
 text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
-train_iter, dev_iter = mr(text_field, label_field, device=-1, repeat=False)
+#train_iter, dev_iter = mr(text_field, label_field, device=-1, repeat=False)
+train_iter, dev_iter = wine(text_field, label_field, device=-1, repeat=False)
 # train_iter, dev_iter, test_iter = sst(text_field, label_field, device=-1, repeat=False)
 
 
@@ -99,7 +131,7 @@ if args.cuda:
 
 # train or predict
 if args.predict is not None:
-    label = train.predict(args.predict, cnn, text_field, label_field, args.cuda)
+    label = train.predict(clean_str(args.predict), cnn, text_field, label_field, args.cuda)
     print('\n[Text]  {}\n[Label] {}\n'.format(args.predict, label))
 elif args.test:
     try:
