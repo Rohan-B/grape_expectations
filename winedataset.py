@@ -51,16 +51,26 @@ class CSV(data.Dataset):
         text_field.preprocessing = data.Pipeline(clean_str)
         fields = [('text', text_field), ('label', label_field)]
         
+        filename = "wineColors.csv"
+        label_column = 'variety'
+        reds_only = True
+
         if examples is None:
             examples = []
-            with open('wineColors.csv', errors='ignore') as f:
+            with open(filename, errors='ignore') as f:
                 whole = pd.read_csv(f)
-                #whole = whole.dropna(subset =["country"],axis=0)
-                df = whole.head(5000)
-                desc = df['description']
-                labs = df['color']
+                whole[label_column] = whole[label_column].astype(str) 
+                
+                if reds_only:
+                    whole['color'] = whole['color'].astype(str)
+                    is_red = whole['color'] == 'Red'
+                    whole = whole[is_red]
+                
+                desc = whole['description']
+                labs = whole[label_column]
+
                 examples += [
-                    data.Example.fromlist([desc[i], labs[i]], fields) for i in range(df.shape[0])]
+                    data.Example.fromlist([row['description'], row[label_column]], fields) for index, row, in whole.iterrows()]
                 print(examples[0])
         super(CSV, self).__init__(examples, fields, **kwargs)
 
