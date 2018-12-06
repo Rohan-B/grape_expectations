@@ -38,6 +38,9 @@ parser.add_argument('-no-cuda', action='store_true', default=False, help='disabl
 parser.add_argument('-snapshot', type=str, default=None, help='filename of model snapshot [default: None]')
 parser.add_argument('-predict', type=str, default=None, help='predict the sentence given')
 parser.add_argument('-test', action='store_true', default=False, help='train or test')
+
+
+parser.add_argument('-dataset', type=int, default=0, help='Which dataset to use, 0 is wine_color labelling, 1 is wine_type[default: 0]')
 args = parser.parse_args()
 
 def clean_str(string):
@@ -86,7 +89,17 @@ def mr(text_field, label_field, **kargs):
     return train_iter, dev_iter
 
 def wine(text_field, label_field, **kargs):
-    train_data, dev_data = winedataset.CSV.splits(text_field, label_field)
+    train_data, dev_data = winedataset.WINE_TYPE.splits(text_field, label_field)
+    text_field.build_vocab(train_data, dev_data)
+    label_field.build_vocab(train_data, dev_data)
+    train_iter, dev_iter = data.Iterator.splits(
+                                (train_data, dev_data), 
+                                batch_sizes=(args.batch_size, len(dev_data)),
+                                **kargs)
+    return train_iter, dev_iter
+
+def rw(text_field, label_field, **kargs):
+    train_data, dev_data = winedataset.RED_WHITE.splits(text_field, label_field)
     text_field.build_vocab(train_data, dev_data)
     label_field.build_vocab(train_data, dev_data)
     train_iter, dev_iter = data.Iterator.splits(
@@ -97,13 +110,18 @@ def wine(text_field, label_field, **kargs):
 
 
 
+
 # load data
 print("\nLoading data...")
 text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
 #train_iter, dev_iter = mr(text_field, label_field, device=-1, repeat=False)
-train_iter, dev_iter = wine(text_field, label_field, device=-1, repeat=False)
-# train_iter, dev_iter, test_iter = sst(text_field, label_field, device=-1, repeat=False)
+#train_iter, dev_iter, test_iter = sst(text_field, label_field, device=-1, repeat=False)
+#train_iter, dev_iter = wine(text_field, label_field, device=-1, repeat=False)
+if args.dataset == 0:
+    train_iter, dev_iter = rw(text_field, label_field, device=-1, repeat=False)
+else:
+    train_iter, dev_iter = wine(text_field, label_field, device=-1, repeat=False)
 
 
 # update args and print
