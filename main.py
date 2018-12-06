@@ -86,7 +86,17 @@ def mr(text_field, label_field, **kargs):
     return train_iter, dev_iter
 
 def wine(text_field, label_field, **kargs):
-    train_data, dev_data = winedataset.CSV.splits(text_field, label_field)
+    train_data, dev_data = winedataset.WINE_TYPE.splits(text_field, label_field)
+    text_field.build_vocab(train_data, dev_data)
+    label_field.build_vocab(train_data, dev_data)
+    train_iter, dev_iter = data.Iterator.splits(
+                                (train_data, dev_data), 
+                                batch_sizes=(args.batch_size, len(dev_data)),
+                                **kargs)
+    return train_iter, dev_iter
+
+def rw(text_field, label_field, **kargs):
+    train_data, dev_data = winedataset.RED_WHITE.splits(text_field, label_field)
     text_field.build_vocab(train_data, dev_data)
     label_field.build_vocab(train_data, dev_data)
     train_iter, dev_iter = data.Iterator.splits(
@@ -97,13 +107,15 @@ def wine(text_field, label_field, **kargs):
 
 
 
+
 # load data
 print("\nLoading data...")
 text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
 #train_iter, dev_iter = mr(text_field, label_field, device=-1, repeat=False)
-train_iter, dev_iter = wine(text_field, label_field, device=-1, repeat=False)
-# train_iter, dev_iter, test_iter = sst(text_field, label_field, device=-1, repeat=False)
+#train_iter, dev_iter, test_iter = sst(text_field, label_field, device=-1, repeat=False)
+#train_iter, dev_iter = wine(text_field, label_field, device=-1, repeat=False)
+train_iter, dev_iter = rw(text_field, label_field, device=-1, repeat=False)
 
 
 # update args and print
