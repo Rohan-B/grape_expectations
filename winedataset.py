@@ -51,13 +51,14 @@ class CSV(data.Dataset):
         text_field.preprocessing = data.Pipeline(clean_str)
         fields = [('text', text_field), ('label', label_field)]
         
+        folder = "datasets"
         filename = "wineColors.csv"
         label_column = 'variety'
         reds_only = True
 
         if examples is None:
             examples = []
-            with open(filename, errors='ignore') as f:
+            with open(folder + "/" + filename, errors='ignore') as f:
                 whole = pd.read_csv(f)
                 whole[label_column] = whole[label_column].astype(str) 
                 
