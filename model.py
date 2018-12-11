@@ -1,3 +1,5 @@
+import gensim
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -17,7 +19,26 @@ class CNN_Text(nn.Module):
         Co = args.kernel_num
         Ks = args.kernel_sizes
 
-        self.embed = nn.Embedding(V, D)
+
+        # Build word embeddings matrix
+        model = gensim.models.Word2Vec.load('wine2vec.model')
+        matrix_len = len(args.vocab)
+        weights_matrix = np.zeros((matrix_len, D))
+        words_found = 0
+
+        for i, word in enumerate(args.vocab.itos):
+            try:
+                weights_matrix[i] = model.wv[word]
+                words_found += 1
+            except KeyError:
+                weights_matrix[i] = np.random.normal(scale=0.6, size=(D, ))
+        
+        weights = torch.FloatTensor(weights_matrix)
+
+        #self.embed = nn.Embedding(V, D)
+        
+        self.embed = nn.Embedding.from_pretrained(weights)
+ 
         # self.convs1 = [nn.Conv2d(Ci, Co, (K, D)) for K in Ks]
         self.convs1 = nn.ModuleList([nn.Conv2d(Ci, Co, (K, D)) for K in Ks])
         '''

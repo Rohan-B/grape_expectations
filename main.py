@@ -8,7 +8,6 @@ import torchtext.data as data
 import torchtext.datasets as datasets
 import model
 import train
-import mydatasets
 import winedataset
 
 parser = argparse.ArgumentParser(description='CNN text classificer')
@@ -27,7 +26,7 @@ parser.add_argument('-shuffle', action='store_true', default=False, help='shuffl
 # model
 parser.add_argument('-dropout', type=float, default=0.5, help='the probability for dropout [default: 0.5]')
 parser.add_argument('-max-norm', type=float, default=3.0, help='l2 constraint of parameters [default: 3.0]')
-parser.add_argument('-embed-dim', type=int, default=128, help='number of embedding dimension [default: 128]')
+parser.add_argument('-embed-dim', type=int, default=100, help='number of embedding dimension [default: 128]')
 parser.add_argument('-kernel-num', type=int, default=100, help='number of each kind of kernel')
 parser.add_argument('-kernel-sizes', type=str, default='3,4,5', help='comma-separated kernel size to use for convolution')
 parser.add_argument('-static', action='store_true', default=False, help='fix the embedding')
@@ -48,7 +47,8 @@ def clean_str(string):
     Tokenization/string cleaning for all datasets except for SST.
     Original taken from https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
     """
-    string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
+    string = re.sub("[^a-zA-Z]"," ", string)
+    #string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
     string = re.sub(r"\'s", " \'s", string)
     string = re.sub(r"\'ve", " \'ve", string)
     string = re.sub(r"n\'t", " n\'t", string)
@@ -76,17 +76,6 @@ def sst(text_field, label_field,  **kargs):
                                         **kargs)
     return train_iter, dev_iter, test_iter 
 
-
-# load MR dataset
-def mr(text_field, label_field, **kargs):
-    train_data, dev_data = mydatasets.MR.splits(text_field, label_field)
-    text_field.build_vocab(train_data, dev_data)
-    label_field.build_vocab(train_data, dev_data)
-    train_iter, dev_iter = data.Iterator.splits(
-                                (train_data, dev_data), 
-                                batch_sizes=(args.batch_size, len(dev_data)),
-                                **kargs)
-    return train_iter, dev_iter
 
 def wine(text_field, label_field, **kargs):
     train_data, dev_data = winedataset.WINE_TYPE.splits(text_field, label_field)
@@ -130,6 +119,7 @@ args.class_num = len(label_field.vocab) - 1
 args.cuda = (not args.no_cuda) and torch.cuda.is_available(); del args.no_cuda
 args.kernel_sizes = [int(k) for k in args.kernel_sizes.split(',')]
 args.save_dir = os.path.join(args.save_dir, datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+args.vocab = text_field.vocab
 
 print("\nParameters:")
 for attr, value in sorted(args.__dict__.items()):
