@@ -33,12 +33,14 @@ class CNN_Text(nn.Module):
             except KeyError:
                 weights_matrix[i] = np.random.normal(scale=0.6, size=(D, ))
         
+        print(words_found)
         weights = torch.FloatTensor(weights_matrix)
 
         #self.embed = nn.Embedding(V, D)
         
         self.embed = nn.Embedding.from_pretrained(weights)
- 
+        self.embed.weight.requires_grad = False
+
         # self.convs1 = [nn.Conv2d(Ci, Co, (K, D)) for K in Ks]
         self.convs1 = nn.ModuleList([nn.Conv2d(Ci, Co, (K, D)) for K in Ks])
         '''

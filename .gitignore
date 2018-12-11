@@ -2,3 +2,4 @@ snapshot/*
 __pycache__/
 *.pyc
 *.sw*
+.ipynb_checkpoints/*
