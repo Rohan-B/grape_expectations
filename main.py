@@ -2,6 +2,7 @@
 import os
 import argparse
 import datetime
+import gensim
 import re
 import torch
 import torchtext.data as data
@@ -112,6 +113,11 @@ if args.dataset == 0:
 else:
     train_iter, dev_iter = wine(text_field, label_field, device=-1, repeat=False)
 
+
+#update vocab for word 2 vec embeddings
+#w2v = gensim.models.Word2Vec.load('wine2vec.model')
+#text_field.vocab = w2v.wv.vocab
+#label_field.vocab = w2v.wv.vocab
 
 # update args and print
 args.embed_num = len(text_field.vocab)

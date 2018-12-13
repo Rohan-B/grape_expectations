@@ -25,6 +25,7 @@ class CNN_Text(nn.Module):
         matrix_len = len(args.vocab)
         weights_matrix = np.zeros((matrix_len, D))
         words_found = 0
+        not_found = 0
 
         for i, word in enumerate(args.vocab.itos):
             try:
@@ -32,8 +33,12 @@ class CNN_Text(nn.Module):
                 words_found += 1
             except KeyError:
                 weights_matrix[i] = np.random.normal(scale=0.6, size=(D, ))
-        
-        print(words_found)
+                print(word)
+                not_found += 1
+
+
+        print("Words found" + str(words_found))
+        print("Not Found" + str(not_found))
         weights = torch.FloatTensor(weights_matrix)
 
         #self.embed = nn.Embedding(V, D)

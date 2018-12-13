@@ -11,7 +11,7 @@ from torchtext import data
 
 class WINE_TYPE(data.Dataset):
 
-    filename = 'winemag-data-130k-v2.csv'
+    filename = 'wineTopTen.csv'
 
     @staticmethod
     def sort_key(ex):
@@ -28,10 +28,12 @@ class WINE_TYPE(data.Dataset):
             Remaining keyword arguments: Passed to the constructor of
                 data.Dataset.
         """
+        
         def clean_str(string):
             """
             Tokenization/string cleaning for all datasets except for SST.
             Original taken from https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
+            """
             """
             string = re.sub("[^a-zA-Z]"," ", string)
             #string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
@@ -48,14 +50,18 @@ class WINE_TYPE(data.Dataset):
             string = re.sub(r"\?", " \? ", string)
             string = re.sub(r"\s{2,}", " ", string)
             return string.strip()
+             """
+        
+            clean = re.sub("[^a-zA-Z]"," ", string)
+            return clean
 
         text_field.preprocessing = data.Pipeline(clean_str)
         fields = [('text', text_field), ('label', label_field)]
         
         folder = "datasets"
-        filename = "wineColors.csv"
+        filename = "wineTopTen.csv"
         label_column = 'variety'
-        reds_only = True
+        reds_only = False
 
         if examples is None:
             examples = []
@@ -69,7 +75,7 @@ class WINE_TYPE(data.Dataset):
                     whole = whole[is_red]
                 
                 examples += [
-                    data.Example.fromlist([row['description'], row[label_column]], fields) for index, row, in whole.iterrows()]
+                    data.Example.fromlist([clean_str(row['description']), row[label_column]], fields) for index, row, in whole.iterrows()]
                 print(examples[0])
         super(WINE_TYPE, self).__init__(examples, fields, **kwargs)
 
