@@ -62,6 +62,7 @@ class WINE_TYPE(data.Dataset):
         filename = "wineTopTen.csv"
         label_column = 'variety'
         reds_only = False
+        top_two = False
 
         if examples is None:
             examples = []
@@ -74,6 +75,12 @@ class WINE_TYPE(data.Dataset):
                     is_red = whole['color'] == 'Red'
                     whole = whole[is_red]
                 
+                if top_two:
+                    varieties = ['Cabernet Sauvignon', 'Pinot Noir']
+                    whole['variety'] = whole['variety'].astype(str)
+                    filtered = whole['variety'].isin(varieties)
+                    whole = whole[filtered]
+
                 examples += [
                     data.Example.fromlist([clean_str(row['description']), row[label_column]], fields) for index, row, in whole.iterrows()]
                 print(examples[0])

@@ -21,7 +21,16 @@ class CNN_Text(nn.Module):
 
 
         # Build word embeddings matrix
+        
+        #Should you only use most freq words or all of them
+        use_subset = False
+
         model = gensim.models.Word2Vec.load('wine2vec.model')
+        
+        if use_subset:
+            model = gensim.models.Word2Vec.load('wine2vec_subset.model')
+
+
         matrix_len = len(args.vocab)
         weights_matrix = np.zeros((matrix_len, D))
         words_found = 0
@@ -32,7 +41,7 @@ class CNN_Text(nn.Module):
                 weights_matrix[i] = model.wv[word]
                 words_found += 1
             except KeyError:
-                weights_matrix[i] = np.random.normal(scale=0.6, size=(D, ))
+                weights_matrix[i] = np.zeros(D)
                 print(word)
                 not_found += 1
 
