@@ -20,7 +20,7 @@ To predict
 * S should be the location of the model used to predict the classification passed in as a string
 
 ## Final Report
-* [PDF](Final_Report.pdf)
+* [PDF](Final_Paper.pdf)
 
 ## References
 * [CNN Text Classification for Pytorch](https://github.com/Shawn1993/cnn-text-classification-pytorch)
