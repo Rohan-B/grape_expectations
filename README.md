@@ -19,5 +19,8 @@ To predict
 * Z should be a description of a wine review passed in as a string
 * S should be the location of the model used to predict the classification passed in as a string
 
+## Final Report
+* [PDF](Final_Report.pdf)
+
 ## References
 * [CNN Text Classification for Pytorch](https://github.com/Shawn1993/cnn-text-classification-pytorch)
